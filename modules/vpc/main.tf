@@ -84,10 +84,10 @@ resource "ibm_is_subnet" "services_zone_2" {
   tags                     = concat(var.tags, ["zone:${local.vpc_zones[1].zone}"])
 }
 
-
 module "services_security_group" {
   source                       = "terraform-ibm-modules/security-group/ibm"
-  version                      = "2.6.2" # Replace "latest" with a release version to lock into a specific release
+  version                      = "2.6.2"
+  vpc_id                       = ibm_is_vpc.demo.id
   add_ibm_cloud_internal_rules = true
   security_group_name          = "${var.prefix}-services-sg"
   security_group_rules = [{

@@ -13,11 +13,11 @@ resource "ibm_dns_custom_resolver" "demo" {
   high_availability = true
   enabled           = true
   locations {
-    subnet_crn = var.subnet_ids[0]
+    subnet_crn = var.subnet_crns[0]
     enabled    = true
   }
   locations {
-    subnet_crn = var.subnet_ids[1]
+    subnet_crn = var.subnet_crns[1]
     enabled    = true
   }
 }
@@ -36,11 +36,29 @@ resource "ibm_dns_permitted_network" "vpc" {
   type        = "vpc"
 }
 
-resource "ibm_dns_resource_record" "webhost_wilcard" {
+resource "ibm_dns_resource_record" "traefik" {
   instance_id = ibm_resource_instance.private_dns.guid
   zone_id     = ibm_dns_zone.demo.zone_id
   type        = "A"
-  name        = "rst.*"
+  name        = "traefik"
+  rdata       = var.webhost_ip
+  ttl         = 3600
+}
+
+resource "ibm_dns_resource_record" "requests" {
+  instance_id = ibm_resource_instance.private_dns.guid
+  zone_id     = ibm_dns_zone.demo.zone_id
+  type        = "A"
+  name        = "requests"
+  rdata       = var.webhost_ip
+  ttl         = 3600
+}
+
+resource "ibm_dns_resource_record" "whoami" {
+  instance_id = ibm_resource_instance.private_dns.guid
+  zone_id     = ibm_dns_zone.demo.zone_id
+  type        = "A"
+  name        = "whoami"
   rdata       = var.webhost_ip
   ttl         = 3600
 }

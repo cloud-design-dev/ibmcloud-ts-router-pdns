@@ -68,7 +68,7 @@ module "prod_compute" {
   name                       = "${local.prefix}-prod-instance"
   zone                       = local.vpc_zones[0].zone
   vpc_id                     = module.lab_vpc.vpc_id
-  subnet_id                  = module.lab_vpc.zone1_subnet_cidr
+  subnet_id                  = module.lab_vpc.zone1_subnet_id
   resource_group_id          = module.resource_group.resource_group_id
   tags                       = concat(local.tags, ["environment:production"])
   vpc_default_security_group = module.lab_vpc.services_security_group
@@ -80,16 +80,16 @@ module "pdns" {
   depends_on        = [module.prod_compute]
   source            = "./modules/pdns"
   prefix            = local.prefix
-  subnet_ids        = [module.lab_vpc.zone1_subnet_id, module.lab_vpc.zone2_subnet_id]
+  subnet_crns       = [module.lab_vpc.zone1_subnet_crn, module.lab_vpc.zone2_subnet_crn]
   vpc_crn           = module.lab_vpc.vpc_crn
   tags              = local.tags
   resource_group_id = module.resource_group.resource_group_id
   webhost_ip        = module.prod_compute.compute_instance_ip
 }
 
-module "tailscale" {
-  depends_on         = [module.pdns]
-  source             = "./modules/tailscale"
-  lab_routes         = [module.lab_vpc.zone1_subnet_cidr, module.lab_vpc.zone1_subnet_cidr]
-  ts_router_hostname = "${local.prefix}-ts-router"
-}
+#module "tailscale" {
+#  depends_on         = [module.pdns]
+#  source             = "./modules/tailscale"
+#  lab_routes         = [module.lab_vpc.zone1_subnet_cidr, module.lab_vpc.zone1_subnet_cidr]
+#  ts_router_hostname = "${local.prefix}-ts-router"
+#}

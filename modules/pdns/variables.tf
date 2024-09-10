@@ -1,5 +1,5 @@
 variable "vpc_crn" {}
-variable "subnet_ids" {}
+variable "subnet_crns" {}
 variable "prefix" {}
 variable "resource_group_id" {}
 variable "tags" {}
