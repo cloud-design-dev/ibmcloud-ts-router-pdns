@@ -37,20 +37,10 @@ variable "existing_ssh_key" {
   default     = ""
 }
 
-variable "hub_prefix" {
-  description = "The address prefix to use for the hub VPC"
+variable "private_dns_zone" {
+  description = "Name of the private DNS zone to create for the VPCs"
   type        = string
-  default     = "192.168.0.0/18"
+  default     = "private.lab"
 }
 
-variable "prod_prefix" {
-  description = "The address prefix to use for the prod_vpc VPC"
-  type        = string
-  default     = "10.250.0.0/18"
-}
 
-variable "dev_prefix" {
-  description = "The address prefix to use for the dev_vpc VPC"
-  type        = string
-  default     = "172.16.64.0/18"
-}
