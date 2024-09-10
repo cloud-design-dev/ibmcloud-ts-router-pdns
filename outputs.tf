@@ -13,3 +13,7 @@ output "zone2_subnet_cidr" {
 output "customer_resolver_ips" {
   value = module.pdns.customer_resolver_ips
 }
+
+output "whoami_fqdn" {
+  value = "whoami.${local.prefix}-demo.lab"
+}
