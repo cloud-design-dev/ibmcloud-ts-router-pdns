@@ -44,3 +44,5 @@ variable "private_dns_zone" {
 }
 
 
+
+variable "transit_gateway_id" {}

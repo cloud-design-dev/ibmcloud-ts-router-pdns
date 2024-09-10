@@ -35,9 +35,18 @@ services:
       - "80:80"
       # The Web UI (enabled by --api.insecure=true)
       - "8080:8080"
+    restart: unless-stopped
+    labels:
+      - "traefik.http.routers.dashboard.rule=Host(`traefik./"${pdns_zone}/"`)"
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
+  whoami:
+    # A container that exposes an API to show its IP address
+    image: traefik/whoami
+    restart: unless-stopped
+    labels:
+      - "traefik.http.routers.whoami.rule=Host(`whoami./"${pdns_zone}/"`)"
 EOF
 
-# docker-compose -f /opt/traefik-docker-compose.yml up -d
+docker-compose -f /opt/traefik-docker-compose.yml up -d

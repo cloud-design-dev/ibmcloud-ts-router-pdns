@@ -72,7 +72,9 @@ module "prod_compute" {
   resource_group_id          = module.resource_group.resource_group_id
   tags                       = concat(local.tags, ["environment:production"])
   vpc_default_security_group = module.lab_vpc.services_security_group
-  cloud_init                 = file("./prod-compute.sh")
+  cloud_init                 = templatefile("./prod-compute.sh", { 
+    pdns_zone = "${local.prefix}-demo.lab"
+  })
   ssh_key_ids                = local.ssh_key_ids
 }
 
@@ -85,8 +87,31 @@ module "pdns" {
   tags              = local.tags
   resource_group_id = module.resource_group.resource_group_id
   webhost_ip        = module.prod_compute.compute_instance_ip
+  landing_zone_crn = data.ibm_is_vpc.landing_zone.crn
 }
 
+
+# just used for testing #########################################
+# take out the tg_connection sections out when done testing     #
+# make sure to remove the tgw var and VPC data source as well   #
+#################################################################
+
+resource "ibm_tg_connection" "landing_zone_connection" {
+
+  gateway      = var.transit_gateway_id
+  network_type = "vpc"
+  name         = "landing-zone-connection"
+  network_id   = data.ibm_is_vpc.landing_zone.crn
+}
+
+resource "ibm_tg_connection" "demo_connection" {
+# take out this section when done testing
+# make sure to remove the tgw_id var as well
+  gateway      = var.transit_gateway_id
+  network_type = "vpc"
+  name         = "demo-connection"
+  network_id   = module.lab_vpc.vpc_crn
+}
 #module "tailscale" {
 #  depends_on         = [module.pdns]
 #  source             = "./modules/tailscale"
