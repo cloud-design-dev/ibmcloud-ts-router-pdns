@@ -1,0 +1,18 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+packages:
+    - build-essential
+    - unzip
+    - jq
+    - git
+    - ssh-import-id
+snap:
+    commands:
+      00: snap install yq
+runcmd:
+  - ['sh', '-c', 'curl -fsSL https://tailscale.com/install.sh | sh']
+  - ['sh', '-c', 'echo "net.ipv4.ip_forward = 1" | sudo tee -a /etc/sysctl.d/99-tailscale.conf && echo "net.ipv6.conf.all.forwarding = 1" | sudo tee -a /etc/sysctl.d/99-tailscale.conf && sudo sysctl -p /etc/sysctl.d/99-tailscale.conf']
+  - ["tailscale", "up", "--advertise-routes=${hub_route},${prod_route},${dev_route}", "--authkey=${tailscale_tailnet_key}", "--accept-routes"]
+final_message: "The system is finally up, after $UPTIME seconds"
+output: {all: '| tee -a /var/log/cloud-init-output.log'}

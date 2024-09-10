@@ -1,0 +1,22 @@
+# IBM Cloud API key
+ibmcloud_api_key = ""
+
+# where to build/deploy Tailscale subnet router resources
+ibmcloud_region = ""
+
+# prefix for resources to be created
+# if none is provided, a random string will be generated and used
+project_prefix = ""
+
+# existing VPC SSH key name to inject into the tailscale subnet router instance
+# if none is provided, a new one is created  
+existing_ssh_key = ""
+
+# Tailscale API Key
+tailscale_api_key = ""
+
+# Tailscale Tailnet id
+tailscale_tailnet_id = ""
+
+# Name of an existing resource group 
+existing_resource_group = ""
