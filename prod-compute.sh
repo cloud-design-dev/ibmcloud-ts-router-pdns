@@ -1,25 +1,19 @@
 #!/bin/bash
 
-DEBIAN_FRONTEND=noninteractive apt-get -qqy update
-DEBIAN_FRONTEND=noninteractive apt-get install -y jq \
-    git \
-    ssh-import-id \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    software-properties-common \
-    unzip
+update_system() {
+    DEBIAN_FRONTEND=noninteractive apt-get -qqy update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y jq git ssh-import-id apt-transport-https ca-certificates curl software-properties-common unzip
+}
 
-# Install Docker    
 
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+install_docker() {
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+    DEBIAN_FRONTEND=noninteractive apt-get -qqy update
+    DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+}
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-DEBIAN_FRONTEND=noninteractive apt-get -qqy update
-
-DEBIAN_FRONTEND=noninteractive apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
+write_compose_file() {
 
 cat <<EOF > /opt/traefik-docker-compose.yml
 version: '3'
@@ -50,3 +44,15 @@ services:
 EOF
 
 docker compose -f /opt/traefik-docker-compose.yml up -d
+}
+
+echo "starting system update"
+update_system
+
+echo "installing docker"
+install_docker
+
+echo "writing docker-compose file"
+write_compose_file
+
+echo "install complete"
