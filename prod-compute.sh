@@ -37,7 +37,7 @@ services:
       - "8080:8080"
     restart: unless-stopped
     labels:
-      - "traefik.http.routers.dashboard.rule=Host(`traefik./"${pdns_zone}/"`)"
+      - traefik.http.routers.dashboard.rule=Host("traefik.${pdns_zone}")
     volumes:
       # So that Traefik can listen to the Docker events
       - /var/run/docker.sock:/var/run/docker.sock
@@ -46,7 +46,7 @@ services:
     image: traefik/whoami
     restart: unless-stopped
     labels:
-      - "traefik.http.routers.whoami.rule=Host(`whoami./"${pdns_zone}/"`)"
+      - traefik.http.routers.whoami.rule=Host("whoami.${pdns_zone}")
 EOF
 
-docker-compose -f /opt/traefik-docker-compose.yml up -d
+docker compose -f /opt/traefik-docker-compose.yml up -d
