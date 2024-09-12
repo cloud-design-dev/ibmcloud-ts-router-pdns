@@ -45,4 +45,6 @@ variable "private_dns_zone" {
 
 
 
-variable "transit_gateway_id" {}
+#variable "transit_gateway_id" {}
+# just used for testing
+variable "home_ip" {}

@@ -17,3 +17,7 @@ output "customer_resolver_ips" {
 output "whoami_fqdn" {
   value = "whoami.${local.prefix}-demo.lab"
 }
+
+output "demo_floating_ip" {
+  value = module.testing.demo_floating_ip
+}

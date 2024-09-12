@@ -8,10 +8,10 @@ resource "random_string" "prefix" {
 }
 
 resource "tailscale_tailnet_key" "lab" {
-  reusable      = true
-  ephemeral     = false
+  reusable      = false
+  ephemeral     = true
   preauthorized = true
-  expiry        = 3600
+  expiry        = 7776000
   description   = "Demo tailscale key for lab"
 }
 
@@ -43,6 +43,7 @@ module "lab_vpc" {
   ibmcloud_region   = var.ibmcloud_region
   resource_group_id = module.resource_group.resource_group_id
   tags              = local.tags
+  home_ip           = var.home_ip
 }
 
 module "tailscale_compute" {
@@ -72,10 +73,11 @@ module "prod_compute" {
   resource_group_id          = module.resource_group.resource_group_id
   tags                       = concat(local.tags, ["environment:production"])
   vpc_default_security_group = module.lab_vpc.services_security_group
-  cloud_init                 = templatefile("./prod-compute.sh", { 
-    pdns_zone = "${local.prefix}-demo.lab"
-  })
-  ssh_key_ids                = local.ssh_key_ids
+  cloud_init                 = file("./prod-compute.yaml")
+  # cloud_init = templatefile("./prod-compute.sh", {
+  #   pdns_zone = "${local.prefix}-demo.lab"
+  # })
+  ssh_key_ids = local.ssh_key_ids
 }
 
 module "pdns" {
@@ -87,7 +89,6 @@ module "pdns" {
   tags              = local.tags
   resource_group_id = module.resource_group.resource_group_id
   webhost_ip        = module.prod_compute.compute_instance_ip
-  landing_zone_crn = data.ibm_is_vpc.landing_zone.crn
 }
 
 
@@ -96,25 +97,13 @@ module "pdns" {
 # make sure to remove the tgw var and VPC data source as well   #
 #################################################################
 
-resource "ibm_tg_connection" "landing_zone_connection" {
-
-  gateway      = var.transit_gateway_id
-  network_type = "vpc"
-  name         = "landing-zone-connection"
-  network_id   = data.ibm_is_vpc.landing_zone.crn
+module "testing" {
+  source            = "./modules/testing"
+  prefix            = local.prefix
+  zone              = local.vpc_zones[0].zone
+  resource_group_id = module.resource_group.resource_group_id
+  vnic_id           = module.tailscale_compute.vnic_id
+  tags              = local.tags
+  # home_ip           = var.home_ip
 }
 
-resource "ibm_tg_connection" "demo_connection" {
-# take out this section when done testing
-# make sure to remove the tgw_id var as well
-  gateway      = var.transit_gateway_id
-  network_type = "vpc"
-  name         = "demo-connection"
-  network_id   = module.lab_vpc.vpc_crn
-}
-#module "tailscale" {
-#  depends_on         = [module.pdns]
-#  source             = "./modules/tailscale"
-#  lab_routes         = [module.lab_vpc.zone1_subnet_cidr, module.lab_vpc.zone1_subnet_cidr]
-#  ts_router_hostname = "${local.prefix}-ts-router"
-#}

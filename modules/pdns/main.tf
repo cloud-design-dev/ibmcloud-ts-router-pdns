@@ -36,12 +36,12 @@ resource "ibm_dns_permitted_network" "demo" {
   type        = "vpc"
 }
 
-resource "ibm_dns_permitted_network" "landing_zone" {
-  instance_id = ibm_resource_instance.private_dns.guid
-  zone_id     = ibm_dns_zone.demo.zone_id
-  vpc_crn     = var.landing_zone_crn
-  type        = "vpc"
-}
+#resource "ibm_dns_permitted_network" "landing_zone" {
+#  instance_id = ibm_resource_instance.private_dns.guid
+#  zone_id     = ibm_dns_zone.demo.zone_id
+#  vpc_crn     = var.landing_zone_crn
+#  type        = "vpc"
+#}
 
 resource "ibm_dns_resource_record" "traefik" {
   instance_id = ibm_resource_instance.private_dns.guid

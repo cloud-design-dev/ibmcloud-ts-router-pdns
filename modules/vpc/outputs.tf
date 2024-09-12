@@ -49,3 +49,4 @@ output "zone1_subnet_cidr" {
 output "zone2_subnet_cidr" {
   value = ibm_is_subnet.services_zone_2.ipv4_cidr_block
 }
+

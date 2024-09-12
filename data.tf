@@ -9,6 +9,6 @@ data "ibm_is_ssh_key" "sshkey" {
 
 # just used during testing when on laptop can can't start tailscale 
 # remove when done
-data "ibm_is_vpc" "landing_zone" {
-  name = "ca-lz-vpc-rst"
-}
+#data "ibm_is_vpc" "landing_zone" {
+#  name = "ca-lz-vpc-rst"
+#}

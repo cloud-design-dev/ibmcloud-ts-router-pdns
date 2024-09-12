@@ -22,3 +22,4 @@ variable "default_address_prefix" {
   type        = string
   default     = "auto"
 }
+variable "home_ip" {}
