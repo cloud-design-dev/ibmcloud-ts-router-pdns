@@ -43,7 +43,7 @@ module "lab_vpc" {
   ibmcloud_region   = var.ibmcloud_region
   resource_group_id = module.resource_group.resource_group_id
   tags              = local.tags
-  home_ip           = var.home_ip
+  allowed_ssh_ip    = var.allowed_ssh_ip
 }
 
 module "tailscale_compute" {
@@ -73,10 +73,10 @@ module "prod_compute" {
   resource_group_id          = module.resource_group.resource_group_id
   tags                       = concat(local.tags, ["environment:production"])
   vpc_default_security_group = module.lab_vpc.services_security_group
-  cloud_init                 = file("./prod-compute.yaml")
-  # cloud_init = templatefile("./prod-compute.sh", {
-  #   pdns_zone = "${local.prefix}-demo.lab"
-  # })
+  # cloud_init                 = file("./prod-compute.sh")
+  cloud_init = templatefile("./prod-compute.sh", {
+    pdns_zone = "${local.prefix}-demo.lab"
+  })
   ssh_key_ids = local.ssh_key_ids
 }
 
@@ -86,24 +86,9 @@ module "pdns" {
   prefix            = local.prefix
   subnet_crns       = [module.lab_vpc.zone1_subnet_crn, module.lab_vpc.zone2_subnet_crn]
   vpc_crn           = module.lab_vpc.vpc_crn
+  dns_zone          = "${local.prefix}-${var.private_dns_zone}"
   tags              = local.tags
   resource_group_id = module.resource_group.resource_group_id
   webhost_ip        = module.prod_compute.compute_instance_ip
-}
-
-
-# just used for testing #########################################
-# take out the tg_connection sections out when done testing     #
-# make sure to remove the tgw var and VPC data source as well   #
-#################################################################
-
-module "testing" {
-  source            = "./modules/testing"
-  prefix            = local.prefix
-  zone              = local.vpc_zones[0].zone
-  resource_group_id = module.resource_group.resource_group_id
-  vnic_id           = module.tailscale_compute.vnic_id
-  tags              = local.tags
-  # home_ip           = var.home_ip
 }
 

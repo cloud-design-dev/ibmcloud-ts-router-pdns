@@ -46,7 +46,7 @@ module "add_rules_to_default_vpc_security_group" {
       }, {
       name      = "allow-homelab-ssh-inbound"
       direction = "inbound"
-      remote    = var.home_ip
+      remote    = var.allowed_ssh_ip
       tcp = {
         port_min = 22
         port_max = 22

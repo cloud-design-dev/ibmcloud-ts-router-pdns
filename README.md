@@ -6,12 +6,19 @@ Use the Tailscale [Subnet Router](https://tailscale.com/kb/1019/subnets) feature
 
 ## Diagram
 
-![Diagram of Tailscale deployment](./images/tailscale-pdns-vpc.png)
+Here is a hgh level overview of the solution:
+
+![Diagram of Tailscale deployment](./images/tailscale-pdns-vpc-overview.png)
+
+Here is a closer look at the docker host that will run our sample services and expose them via Traefik:
+
+![Diagram of Tailscale deployment](./images/tailscale-pdns-vpc-docker-host.png)
 
 ## Pre-reqs
 
 - [ ] IBM Cloud [API Key](https://cloud.ibm.com/docs/account?topic=account-userapikey&interface=ui#create_user_key)
 - [ ] Tailscale [API Key](https://login.tailscale.com/admin/settings/keys)
+- [ ] Tailscale [Tailnet ID](https://login.tailscale.com/admin/settings/general). This is the `Organization` in the Tailscale admin console.
 - [ ] Terraform [installed](https://developer.hashicorp.com/terraform/install) locally
 
 ## Getting started
@@ -31,9 +38,19 @@ Copy the example terraform variables file and update the values with your own.
 cp tfvars-template terraform.tfvars
 ```
 
-#### Variables 
+#### Variables
 
- - [ ] todo: use terraform-docs utility to generate documentation for the variables and add in table 
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_allowed_ssh_ip"></a> [allowed\_ssh\_ip](#input\_allowed\_ssh\_ip) | The IP address or CIDR block to allow SSH access from in to our Tailscale router instance. | `string` | `"0.0.0.0/0"` | no |
+| <a name="input_existing_resource_group"></a> [existing\_resource\_group](#input\_existing\_resource\_group) | The IBM Cloud resource group to assign to the provisioned resources. | `string` | n/a | yes |
+| <a name="input_existing_ssh_key"></a> [existing\_ssh\_key](#input\_existing\_ssh\_key) | The name of an existing SSH key to use for provisioning resources. If one is not provided, a new key will be generated. | `string` | `""` | no |
+| <a name="input_ibmcloud_api_key"></a> [ibmcloud\_api\_key](#input\_ibmcloud\_api\_key) | The IBM Cloud API key to use for provisioning resources | `string` | n/a | yes |
+| <a name="input_ibmcloud_region"></a> [ibmcloud\_region](#input\_ibmcloud\_region) | The IBM Cloud region to use for provisioning VPCs and other resources. | `string` | n/a | yes |
+| <a name="input_private_dns_zone"></a> [private\_dns\_zone](#input\_private\_dns\_zone) | Name of the private DNS zone to create for the VPCs | `string` | `"internal.lab"` | no |
+| <a name="input_project_prefix"></a> [project\_prefix](#input\_project\_prefix) | The prefix to use for naming resources. If none is provided, a random string will be generated. | `string` | `""` | no |
+| <a name="input_tailscale_api_key"></a> [tailscale\_api\_key](#input\_tailscale\_api\_key) | The Tailscale API key | `string` | n/a | yes |
+| <a name="input_tailscale_tailnet_id"></a> [tailscale\_tailnet\_id](#input\_tailscale\_tailnet\_id) | The Tailscale tailnet ID | `string` | n/a | yes |
 
 ### Initialize, Plan and Apply the Terraform configuration
 
@@ -50,41 +67,52 @@ If no errors are returned, you can apply the plan to create the VPCs, subnets, a
 terraform apply plan.out
 ```
 
-When the provosion is complete, you should see the output of the plan, including the private IP addresses of the compute hosts.
+When the provosion is complete, you should see the output of the plan, including the private IP addresses of the compute hosts, the advertised subnets, and our custom resolvers.
 
 ```shell
-Apply complete! Resources: 41 added, 0 changed, 0 destroyed.
+Apply complete! Resources: 38 added, 0 changed, 0 destroyed.
 
 Outputs:
 
-dev_node_ip = "172.16.64.4"
-dev_vpc_subnet = "172.16.64.0/26"
-hub_vpc_subnet = "192.168.0.0/26"
-prod_node_ip = "172.16.0.4"
-prod_vpc_subnet = "172.16.0.0/26"
-ts_router_ip = "192.168.0.4"
+custom_resolver_ips = tolist([
+  "10.250.0.5",
+  "10.250.64.4",
+])
+lab_fqdns = [
+  "whoami.ythd-internal.lab",
+  "tools.ythd-internal.lab",
+  "requests.ythd-internal.lab",
+  "dashboard.ythd-internal.lab",
+]
+ts_router_subnet_cidr = "10.250.0.64/27"
+workload_instance_ip = "10.250.0.4"
+zone1_subnet_cidr = "10.250.0.0/26"
+zone2_subnet_cidr = "10.250.64.0/26"
+
 ```
 
 ### Approve the advertised subnets in the Tailscale admin console
 
 By default the subnet router will not advertise any of the subnets until they are approved in the Tailscale admin console. From the admin console, navigate to the Machines tab and click the subnet router instance name. On the machine details page you should see the subnets that are available to be advertised.
 
-![Subnets awaiting advertisement approval](./images/awaiting-approval-subnets.png)
+![Subnets awaiting advertisement approval](./images/subnets-awaiting-approval.png)
 
 Under **Approved** click `Edit` and select the subnets you want to advertise and click `Save`.
 
-![Approving the subnets](./images/subnet-approve.png)
+![Approving the subnets](./images/approve-subnets.png)
 
 ### Connect to Tailscale and check connectivity
 
-Once the subnets are approved, you can start the Tailscale app on your local machine and start testing connectivity to the private IP addresses of our VPC compute instances.
+Once the subnets are approved, you can start the Tailscale app on your local machine and set the local DNS resolvers to the custom resolvers that were created in the VPC. You can find the IP addresses of the custom resolvers in the terraform output. If you happen to be using a Mac, you can set the custom resolvers in the Network settings or via the command line with the `networksetup` command:
 
 ```shell
-curl http://$(terraform output whoami_fqdn)
+networksetup -setdnsservers Ethernet 10.250.0.5 10.250.64.4
+```
 
-# or
+With the resolvers set, we can now start testing connectivity to our deployed services. Take one of the FQDNs from the terraform output and try to connect to it.
 
-ssh root@<prod_node_ip>
+```shell
+curl "http://$(terraform output --json | jq -r '.lab_fqdns.value[0]')"
 ```
 
 ### Clean up
@@ -97,4 +125,4 @@ terraform destroy
 
 ## Conclusion
 
-In this example we have deployed a Tailscale subnet router in a hub IBM Cloud VPC and connected it to two spoke VPCs in the same region using a Transit Gateway. This allows us to connect in to our compute in these VPCs without the need for each device to be running the Tailscale agent.
+In this example we have deployed a Tailscale subnet router in an IBM Cloud VPC to expose private DNS services to our Tailscale network. We also created custom resolvers in the private DNS zone that allow us to connect to our private services using the FQDNs we have defined in the private DNS zone from our local machine. 

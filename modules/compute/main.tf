@@ -25,9 +25,12 @@ resource "ibm_is_instance" "compute" {
     response_hop_limit = 5
   }
 
+  user_data = var.cloud_init
+
   boot_volume {
     auto_delete_volume = true
   }
+
   primary_network_attachment {
     name = "${var.name}-primary-interface"
     virtual_network_interface {

@@ -22,4 +22,9 @@ variable "default_address_prefix" {
   type        = string
   default     = "auto"
 }
-variable "home_ip" {}
+
+variable "allowed_ssh_ip" {
+  description = "The IP address or CIDR block to allow SSH access from in to our Tailscale router instance."
+  type        = string
+  default     = "0.0.0.0/0"
+}
