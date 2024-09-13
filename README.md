@@ -18,7 +18,7 @@ Here is a closer look at the docker host that will run our sample services and e
 
 - [ ] IBM Cloud [API Key](https://cloud.ibm.com/docs/account?topic=account-userapikey&interface=ui#create_user_key)
 - [ ] Tailscale [API Key](https://login.tailscale.com/admin/settings/keys)
-- [ ] Tailscale [Tailnet ID](https://login.tailscale.com/admin/settings/general). This is the `Organization` in the Tailscale admin console.
+- [ ] Tailscale [Organization](https://login.tailscale.com/admin/settings/general). This is the name of your Tailnet Organization **not** your Tailnet DNS name.
 - [ ] Terraform [installed](https://developer.hashicorp.com/terraform/install) locally
 
 ## Getting started
@@ -50,7 +50,7 @@ cp tfvars-template terraform.tfvars
 | <a name="input_private_dns_zone"></a> [private\_dns\_zone](#input\_private\_dns\_zone) | Name of the private DNS zone to create for the VPCs | `string` | `"internal.lab"` | no |
 | <a name="input_project_prefix"></a> [project\_prefix](#input\_project\_prefix) | The prefix to use for naming resources. If none is provided, a random string will be generated. | `string` | `""` | no |
 | <a name="input_tailscale_api_key"></a> [tailscale\_api\_key](#input\_tailscale\_api\_key) | The Tailscale API key | `string` | n/a | yes |
-| <a name="input_tailscale_tailnet_id"></a> [tailscale\_tailnet\_id](#input\_tailscale\_tailnet\_id) | The Tailscale tailnet ID | `string` | n/a | yes |
+| <a name="input_tailscale_organization"></a> [tailscale\_organization](#input\_tailscale\_organization) | The Tailscale Organization name for your Tailnet | `string` | n/a | yes |
 
 ### Initialize, Plan and Apply the Terraform configuration
 
@@ -125,4 +125,4 @@ terraform destroy
 
 ## Conclusion
 
-In this example we have deployed a Tailscale subnet router in an IBM Cloud VPC to expose private DNS services to our Tailscale network. We also created custom resolvers in the private DNS zone that allow us to connect to our private services using the FQDNs we have defined in the private DNS zone from our local machine. 
+In this example we have deployed a Tailscale subnet router in an IBM Cloud VPC to expose private DNS services to our Tailscale network. We also created custom resolvers in the private DNS zone that allow us to connect to our private services using the FQDNs we have defined in the private DNS zone from our local machine.

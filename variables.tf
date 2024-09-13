@@ -10,8 +10,8 @@ variable "tailscale_api_key" {
   sensitive   = true
 }
 
-variable "tailscale_tailnet_id" {
-  description = "The Tailscale tailnet ID"
+variable "tailscale_organization" {
+  description = "The Tailscale tailnet Organization name. Can be found in the Tailscale admin console > Settings > General."
   type        = string
 }
 

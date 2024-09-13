@@ -15,8 +15,8 @@ existing_ssh_key = ""
 # Tailscale API Key
 tailscale_api_key = ""
 
-# Tailscale Tailnet id
-tailscale_tailnet_id = ""
+# Tailscale Organization
+tailscale_organization = ""
 
 # Name of an existing resource group 
 existing_resource_group = ""
