@@ -48,7 +48,7 @@ resource "ibm_dns_resource_record" "it_tools" {
   zone_id     = ibm_dns_zone.demo.zone_id
   type        = "A"
   name        = "tools"
-  rdata       = var.webhost_ip
+  rdata       = var.workload_compute_ip
   ttl         = 3600
 }
 
@@ -57,7 +57,7 @@ resource "ibm_dns_resource_record" "request_baskets" {
   zone_id     = ibm_dns_zone.demo.zone_id
   type        = "A"
   name        = "requests"
-  rdata       = var.webhost_ip
+  rdata       = var.workload_compute_ip
   ttl         = 3600
 }
 
@@ -66,7 +66,7 @@ resource "ibm_dns_resource_record" "whoami" {
   zone_id     = ibm_dns_zone.demo.zone_id
   type        = "A"
   name        = "whoami"
-  rdata       = var.webhost_ip
+  rdata       = var.workload_compute_ip
   ttl         = 3600
 }
 
@@ -75,6 +75,6 @@ resource "ibm_dns_resource_record" "dashboard" {
   zone_id     = ibm_dns_zone.demo.zone_id
   type        = "A"
   name        = "dashboard"
-  rdata       = var.webhost_ip
+  rdata       = var.workload_compute_ip
   ttl         = 3600
 }

@@ -3,5 +3,5 @@ variable "subnet_crns" {}
 variable "prefix" {}
 variable "resource_group_id" {}
 variable "tags" {}
-variable "webhost_ip" {}
+variable "workload_compute_ip" {}
 variable "dns_zone" {}

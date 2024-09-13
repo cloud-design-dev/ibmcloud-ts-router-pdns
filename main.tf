@@ -63,10 +63,10 @@ module "tailscale_compute" {
   ssh_key_ids = local.ssh_key_ids
 }
 
-module "prod_compute" {
+module "workload_compute" {
   depends_on                 = [module.tailscale_compute]
   source                     = "./modules/compute"
-  name                       = "${local.prefix}-prod-instance"
+  name                       = "${local.prefix}-workload-instance"
   zone                       = local.vpc_zones[0].zone
   vpc_id                     = module.lab_vpc.vpc_id
   subnet_id                  = module.lab_vpc.zone1_subnet_id
@@ -75,20 +75,20 @@ module "prod_compute" {
   vpc_default_security_group = module.lab_vpc.services_security_group
   # cloud_init                 = file("./prod-compute.sh")
   cloud_init = templatefile("./prod-compute.sh", {
-    pdns_zone = "${local.prefix}-demo.lab"
+    pdns_zone = "${local.prefix}-${var.private_dns_zone}"
   })
   ssh_key_ids = local.ssh_key_ids
 }
 
 module "pdns" {
-  depends_on        = [module.prod_compute]
-  source            = "./modules/pdns"
-  prefix            = local.prefix
-  subnet_crns       = [module.lab_vpc.zone1_subnet_crn, module.lab_vpc.zone2_subnet_crn]
-  vpc_crn           = module.lab_vpc.vpc_crn
-  dns_zone          = "${local.prefix}-${var.private_dns_zone}"
-  tags              = local.tags
-  resource_group_id = module.resource_group.resource_group_id
-  webhost_ip        = module.prod_compute.compute_instance_ip
+  depends_on          = [module.workload_compute]
+  source              = "./modules/pdns"
+  prefix              = local.prefix
+  subnet_crns         = [module.lab_vpc.zone1_subnet_crn, module.lab_vpc.zone2_subnet_crn]
+  vpc_crn             = module.lab_vpc.vpc_crn
+  dns_zone            = "${local.prefix}-${var.private_dns_zone}"
+  tags                = local.tags
+  resource_group_id   = module.resource_group.resource_group_id
+  workload_compute_ip = module.workload_compute.compute_instance_ip
 }
 

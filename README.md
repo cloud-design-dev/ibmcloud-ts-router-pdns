@@ -113,7 +113,25 @@ With the resolvers set, we can now start testing connectivity to our deployed se
 
 ```shell
 curl "http://$(terraform output --json | jq -r '.lab_fqdns.value[0]')"
+Hostname: 307a35892c5c
+IP: 127.0.0.1
+IP: ::1
+IP: 172.18.0.5
+RemoteAddr: 172.18.0.2:49386
+GET / HTTP/1.1
+Host: whoami.ygdg-internal.lab
+User-Agent: curl/8.7.1
+Accept: */*
+Accept-Encoding: gzip
+X-Forwarded-For: 10.250.0.4
+X-Forwarded-Host: whoami.ygdg-internal.lab
+X-Forwarded-Port: 80
+X-Forwarded-Proto: http
+X-Forwarded-Server: 71cfe6245938
+X-Real-Ip: 10.250.0.4
 ```
+
+![Browser test](https://images.gh40-dev.systems/Shared-Image-2024-09-13-11-32-46.png)
 
 ### Clean up
 
