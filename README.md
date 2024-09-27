@@ -95,7 +95,7 @@ zone2_subnet_cidr = "10.250.64.0/26"
 
 By default the subnet router will not advertise any of the subnets until they are approved in the Tailscale admin console. From the admin console, navigate to the Machines tab and click the subnet router instance name. On the machine details page you should see the subnets that are available to be advertised.
 
-![Subnets awaiting advertisement approval](./images/awaiting-subnets.png)
+![Subnets awaiting advertisement approval](./images/subnets-awaiting-approval.png)
 
 Under **Approved** click `Edit` and select the subnets you want to advertise and click `Save`.
 
