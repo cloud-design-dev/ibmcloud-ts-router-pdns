@@ -8,10 +8,10 @@ resource "random_string" "prefix" {
 }
 
 resource "tailscale_tailnet_key" "lab" {
-  reusable      = true
-  ephemeral     = false
+  reusable      = false
+  ephemeral     = true
   preauthorized = true
-  expiry        = 3600
+  expiry        = 7776000
   description   = "Demo tailscale key for lab"
 }
 
@@ -43,6 +43,7 @@ module "lab_vpc" {
   ibmcloud_region   = var.ibmcloud_region
   resource_group_id = module.resource_group.resource_group_id
   tags              = local.tags
+  allowed_ssh_ip    = var.allowed_ssh_ip
 }
 
 module "tailscale_compute" {
@@ -62,59 +63,32 @@ module "tailscale_compute" {
   ssh_key_ids = local.ssh_key_ids
 }
 
-module "prod_compute" {
+module "workload_compute" {
   depends_on                 = [module.tailscale_compute]
   source                     = "./modules/compute"
-  name                       = "${local.prefix}-prod-instance"
+  name                       = "${local.prefix}-workload-instance"
   zone                       = local.vpc_zones[0].zone
   vpc_id                     = module.lab_vpc.vpc_id
   subnet_id                  = module.lab_vpc.zone1_subnet_id
   resource_group_id          = module.resource_group.resource_group_id
   tags                       = concat(local.tags, ["environment:production"])
   vpc_default_security_group = module.lab_vpc.services_security_group
-  cloud_init                 = templatefile("./prod-compute.sh", { 
-    pdns_zone = "${local.prefix}-demo.lab"
+  # cloud_init                 = file("./prod-compute.sh")
+  cloud_init = templatefile("./prod-compute.sh", {
+    pdns_zone = "${local.prefix}-${var.private_dns_zone}"
   })
-  ssh_key_ids                = local.ssh_key_ids
+  ssh_key_ids = local.ssh_key_ids
 }
 
 module "pdns" {
-  depends_on        = [module.prod_compute]
-  source            = "./modules/pdns"
-  prefix            = local.prefix
-  subnet_crns       = [module.lab_vpc.zone1_subnet_crn, module.lab_vpc.zone2_subnet_crn]
-  vpc_crn           = module.lab_vpc.vpc_crn
-  tags              = local.tags
-  resource_group_id = module.resource_group.resource_group_id
-  webhost_ip        = module.prod_compute.compute_instance_ip
-  landing_zone_crn = data.ibm_is_vpc.landing_zone.crn
+  depends_on          = [module.workload_compute]
+  source              = "./modules/pdns"
+  prefix              = local.prefix
+  subnet_crns         = [module.lab_vpc.zone1_subnet_crn, module.lab_vpc.zone2_subnet_crn]
+  vpc_crn             = module.lab_vpc.vpc_crn
+  dns_zone            = "${local.prefix}-${var.private_dns_zone}"
+  tags                = local.tags
+  resource_group_id   = module.resource_group.resource_group_id
+  workload_compute_ip = module.workload_compute.compute_instance_ip
 }
 
-
-# just used for testing #########################################
-# take out the tg_connection sections out when done testing     #
-# make sure to remove the tgw var and VPC data source as well   #
-#################################################################
-
-resource "ibm_tg_connection" "landing_zone_connection" {
-
-  gateway      = var.transit_gateway_id
-  network_type = "vpc"
-  name         = "landing-zone-connection"
-  network_id   = data.ibm_is_vpc.landing_zone.crn
-}
-
-resource "ibm_tg_connection" "demo_connection" {
-# take out this section when done testing
-# make sure to remove the tgw_id var as well
-  gateway      = var.transit_gateway_id
-  network_type = "vpc"
-  name         = "demo-connection"
-  network_id   = module.lab_vpc.vpc_crn
-}
-#module "tailscale" {
-#  depends_on         = [module.pdns]
-#  source             = "./modules/tailscale"
-#  lab_routes         = [module.lab_vpc.zone1_subnet_cidr, module.lab_vpc.zone1_subnet_cidr]
-#  ts_router_hostname = "${local.prefix}-ts-router"
-#}

@@ -25,11 +25,12 @@ resource "ibm_is_instance" "compute" {
     response_hop_limit = 5
   }
 
+  user_data = var.cloud_init
+
   boot_volume {
     auto_delete_volume = true
   }
-  user_data = var.cloud_init
-  #   user_data = file("${path.module}/cloud-init.yaml")
+
   primary_network_attachment {
     name = "${var.name}-primary-interface"
     virtual_network_interface {

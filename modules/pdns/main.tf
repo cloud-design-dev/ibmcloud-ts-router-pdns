@@ -23,7 +23,7 @@ resource "ibm_dns_custom_resolver" "demo" {
 }
 
 resource "ibm_dns_zone" "demo" {
-  name        = "${var.prefix}-demo.lab"
+  name        = var.dns_zone
   instance_id = ibm_resource_instance.private_dns.guid
   description = "demo-lab-zone"
   label       = "demo-lab-zone"
@@ -36,28 +36,28 @@ resource "ibm_dns_permitted_network" "demo" {
   type        = "vpc"
 }
 
-resource "ibm_dns_permitted_network" "landing_zone" {
-  instance_id = ibm_resource_instance.private_dns.guid
-  zone_id     = ibm_dns_zone.demo.zone_id
-  vpc_crn     = var.landing_zone_crn
-  type        = "vpc"
-}
+#resource "ibm_dns_permitted_network" "landing_zone" {
+#  instance_id = ibm_resource_instance.private_dns.guid
+#  zone_id     = ibm_dns_zone.demo.zone_id
+#  vpc_crn     = var.landing_zone_crn
+#  type        = "vpc"
+#}
 
-resource "ibm_dns_resource_record" "traefik" {
+resource "ibm_dns_resource_record" "it_tools" {
   instance_id = ibm_resource_instance.private_dns.guid
   zone_id     = ibm_dns_zone.demo.zone_id
   type        = "A"
-  name        = "traefik"
-  rdata       = var.webhost_ip
+  name        = "tools"
+  rdata       = var.workload_compute_ip
   ttl         = 3600
 }
 
-resource "ibm_dns_resource_record" "requests" {
+resource "ibm_dns_resource_record" "request_baskets" {
   instance_id = ibm_resource_instance.private_dns.guid
   zone_id     = ibm_dns_zone.demo.zone_id
   type        = "A"
   name        = "requests"
-  rdata       = var.webhost_ip
+  rdata       = var.workload_compute_ip
   ttl         = 3600
 }
 
@@ -66,6 +66,15 @@ resource "ibm_dns_resource_record" "whoami" {
   zone_id     = ibm_dns_zone.demo.zone_id
   type        = "A"
   name        = "whoami"
-  rdata       = var.webhost_ip
+  rdata       = var.workload_compute_ip
+  ttl         = 3600
+}
+
+resource "ibm_dns_resource_record" "dashboard" {
+  instance_id = ibm_resource_instance.private_dns.guid
+  zone_id     = ibm_dns_zone.demo.zone_id
+  type        = "A"
+  name        = "dashboard"
+  rdata       = var.workload_compute_ip
   ttl         = 3600
 }

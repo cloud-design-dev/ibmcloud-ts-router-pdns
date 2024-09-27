@@ -43,6 +43,14 @@ module "add_rules_to_default_vpc_security_group" {
         type = 8
       }
       remote = "100.64.0.0/10"
+      }, {
+      name      = "allow-homelab-ssh-inbound"
+      direction = "inbound"
+      remote    = var.allowed_ssh_ip
+      tcp = {
+        port_min = 22
+        port_max = 22
+      }
     }
   ]
   tags = var.tags
@@ -64,6 +72,7 @@ resource "ibm_is_subnet" "dmz_zone_1" {
   zone                     = local.vpc_zones[0].zone
   total_ipv4_address_count = "32"
   tags                     = concat(var.tags, ["zone:${local.vpc_zones[0].zone}"])
+  public_gateway           = ibm_is_public_gateway.demo[0].id
 }
 
 resource "ibm_is_subnet" "services_zone_1" {
@@ -72,6 +81,7 @@ resource "ibm_is_subnet" "services_zone_1" {
   vpc                      = ibm_is_vpc.demo.id
   zone                     = local.vpc_zones[0].zone
   total_ipv4_address_count = "64"
+  public_gateway           = ibm_is_public_gateway.demo[0].id
   tags                     = concat(var.tags, ["zone:${local.vpc_zones[0].zone}"])
 }
 
@@ -81,6 +91,7 @@ resource "ibm_is_subnet" "services_zone_2" {
   vpc                      = ibm_is_vpc.demo.id
   zone                     = local.vpc_zones[1].zone
   total_ipv4_address_count = "64"
+  public_gateway           = ibm_is_public_gateway.demo[1].id
   tags                     = concat(var.tags, ["zone:${local.vpc_zones[1].zone}"])
 }
 
@@ -88,6 +99,7 @@ module "services_security_group" {
   source                       = "terraform-ibm-modules/security-group/ibm"
   version                      = "2.6.2"
   vpc_id                       = ibm_is_vpc.demo.id
+  resource_group               = var.resource_group_id
   add_ibm_cloud_internal_rules = true
   security_group_name          = "${var.prefix}-services-sg"
   security_group_rules = [{
