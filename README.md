@@ -8,7 +8,7 @@ Use the Tailscale [Subnet Router](https://tailscale.com/kb/1019/subnets) feature
 
 Here is a hgh level overview of the solution:
 
-![Diagram of Tailscale deployment](./images/tailscale-pdns-vpc-overview.png)
+![Diagram of Tailscale deployment](./images/tailscale-pdns-vpc.png)
 
 Here is a closer look at the docker host that will run our sample services and expose them via Traefik:
 
